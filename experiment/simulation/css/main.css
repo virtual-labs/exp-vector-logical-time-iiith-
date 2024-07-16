@@ -1,1 +1,362 @@
-/* You CSS goes in here */
+h3.cp {
+    margin: 0px min(1.5vw, 5px) auto min(1.5vw, 5px);
+    padding: min(1vh, 5px) min(1vw, 5px);
+    color: #445566;
+    font-weight: 500;
+}
+
+#tellspace {
+    border: 1px inset black;
+    width: 90vw;
+    height: 60vh;
+    margin: auto;
+    overflow: scroll;
+    overflow-x: visible;
+    overflow-y: auto;
+    background-color: #d7dee2;
+    padding: 2.5vh 2.5vw 2.5vh 2.5vw;
+}
+
+#simspace {
+    height: 100%;
+    direction: ltr;
+    opacity: 1;
+    position: relative;
+}
+
+.slider-container {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-flow: row;
+    justify-content: center;
+    align-items: center;
+    padding: min(1vh, 10px);
+    margin: min(1vh, 10px);
+    z-index: 2;
+}
+
+.increment {
+    height: max(min(5vh, 1.5em), 20px);
+    width: max(min(5vw, 3em), 20px);
+    margin: 0 min(1vw,10px) 0 0;
+}
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: max(min(3vh, 50px), 20px);
+    border: 1 px sloid black;
+    opacity: 1;
+    margin: 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.slider-bone:hover {
+    opacity: 0.7;
+    box-shadow: 0 0 6px rgba(35, 173, 278, 1);
+}
+
+.slider-bone {
+    width: 100%;
+    height: max(min(1vh, 3px), 1px);
+    background-color: black;
+    opacity: 1;
+    position: relative;
+    box-shadow: 0 0 1px rgba(35, 35, 35, 1);
+}
+
+#buttonspace {
+    width: 100%;
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: min(1vh, 5px) min(1vw, 5px);
+    padding: min(1vh, 5px) min(1vw, 5px);
+}
+
+#processoradd {
+    display:flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;   
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button
+{
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number]
+{
+  -moz-appearance: textfield;
+  appearance: textfield;
+  height: 35px;
+  width: 52px;
+  font-size: 18px;
+  line-height: 26px;
+}
+
+.quantity-nav {
+    float: left;
+    position: relative;
+    height: 35px;
+}
+  
+.quantity-button {
+    position: relative;
+    cursor: pointer;
+    border-left: 1px solid #536475;
+    width: 20px;
+    text-align: center;
+    color: #333;
+    font-size: 11px;
+    font-family: "Trebuchet MS", Helvetica, sans-serif !important;
+    line-height: 1.7;
+    -webkit-transform: translateX(-150%);
+    transform: translateX(-150%);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+.quantity-button.quantity-up:hover {
+    background-color: #BDC;
+}
+
+.quantity-button.quantity-down:hover {
+    background-color: #DBC;
+}
+
+.quantity-button.quantity-up {
+    position: absolute;
+    height: 50%;
+    top: 0;
+    border-bottom: 1px solid #536475;
+}
+  
+.quantity-button.quantity-down {
+    position: absolute;
+    bottom: 0px;
+    height: 50%;
+}
+
+.event {
+    border-radius: 7.5px;
+    border: 2px solid black;
+    height: 15px;
+    width: 15px;
+    background-color: #949494;
+    position: absolute;
+    bottom: -6px;
+    z-index: 3;
+}
+
+.event.to {
+    border-radius: 5px;
+    height: 10px;
+    width: 10px;
+    transform: translate(2.5px, -2.5px);
+}
+
+.event:hover {
+    box-shadow: 0 0 6px rgba(35, 173, 255, 1);
+}
+
+.delete .event:hover {
+    box-shadow: 0 0 6px rgba(255, 173, 35, 1);
+}
+
+#messagespace {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 1;
+}
+
+.message {
+    opacity: 1;
+    stroke: black;
+    stroke-width: 3px;
+}
+
+.message>line:hover {
+    filter: drop-shadow(0 0 6px rgba(35, 173, 255, 1));
+}
+
+.delete .message>line:hover {
+    filter: drop-shadow(0 0 6px rgba(255, 173, 35));
+}
+
+.message-arrow {
+    stroke-width: 1px;
+    fill: #247c59;
+    stroke:#18543c;
+    filter: drop-shadow( 1px 1px 2px rgb(226, 255, 243));
+}
+
+@-webkit-keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+  
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity:1;
+    }
+}
+
+input[type=checkbox].check-label {
+    display: none;
+}
+
+label.check-label {
+    display: inline-block;
+    height: 100%;
+    width: 100%;
+    top: -6px;
+}
+
+.delete label.check-label {
+    display: none;
+}
+
+.to > label.check-label {
+    top: -12px;
+}
+
+.to > .event-tip {
+    right: -320%;
+    bottom: 170%;
+}
+
+.event-tip {
+    position: absolute;
+    visibility: visible;
+    background-color: #463071;
+    text-align: center;
+    padding: 3px 10px;
+    border-radius: 6px;
+    z-index: 4;
+    opacity: 0;
+    bottom: 140%;
+    right: -150%;
+    display: inline;
+    color: rgb(237, 255, 222);
+}
+
+
+.event-tip:after {
+    content: "";
+    position: absolute;
+    top: 92%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #463071 transparent transparent transparent;
+}
+
+sub {
+    vertical-align: sub;
+    font-size: smaller;
+}
+
+input[type=checkbox].check-label:checked ~ .event-tip {
+    visibility: visible;
+    -webkit-animation: fadeIn 0.75s;
+    animation: fadeIn 0.75s;
+    opacity: 1;
+}
+
+#cyclespace {
+    display: block; 
+    position: fixed; 
+    z-index: 1; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.4);
+}
+
+#cyclespace.hidden {
+    display: none;
+}
+
+#iscycle {
+    position: relative;
+    background-color: rgba(255, 0, 0, 0.4);
+    color: white;
+    box-shadow: 0 4px 10px 0 rgba(0,0,0,0.2),0 4px 20px 0 rgba(0,0,0,0.4);
+    width: 70vw;
+    margin: auto;
+    padding: 0.5em 20px;
+    font-size: 30px;
+    -webkit-animation: fadeIn 0.75s;
+    animation: fadeIn 0.75s;
+    top: 30vh;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+#displayspace {
+    border: 3px inset #0f4b33;
+    width: 90vw;
+    height: 30vh;
+    margin: auto;
+    background-color: #17744f;
+    overflow:scroll;
+}
+
+#causalspace {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+#causalspace rect {
+    position: absolute;
+    z-index: 0;
+    top: 50%;
+    width: 100%;
+    height: 100%;
+}
+
+#causalgroup circle {
+    fill: rgb(199, 76, 5);
+    z-index: 2;
+}
+
+#causalgroup text {
+    fill: rgb(48, 17, 119);
+    font-size: medium;
+}
+
+#causalgroup .subscript {
+    font-size: smaller;
+}
+
+#causalgroup line {
+    stroke: rgb(248, 231, 119);
+    stroke-width: 3px;
+    z-index: 1;
+}
