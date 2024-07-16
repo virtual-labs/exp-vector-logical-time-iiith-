@@ -60,7 +60,7 @@ class Message {
     }
 }
 
-export function computeScalar(inEvents, inMessages, inTicks, result, causalChain) {
+export function computeVector(inEvents, inMessages, inTicks, result, causalChain) {
     result.clear();
     // Removing previous mappings
     causalChain.clear();
@@ -71,7 +71,7 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
     // Used to map a from event into message queue
     const messageQ = new Map();
     // Holds messages that have been sent, but not yet received
-    const processes = new Array(inTicks.length).fill(0);
+    const processes = Array.from(Array(inTicks.length), () => new Array(inTicks.length).fill(0));
     // Holds current time at every process
     const is_stopped = new Array(inTicks.length).fill(-1);
     // If value of index < 0 => process is running
@@ -102,7 +102,7 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
         const currentEvent = inEvents[eindx[i]];
         if (is_stopped[currentEvent.p] < 0 || messageQ.has(currentEvent)) {
             if (is_stopped[currentEvent.p] < 0) {
-                processes[currentEvent.p] += inTicks[currentEvent.p];        
+                processes[currentEvent.p][currentEvent.p] += inTicks[currentEvent.p];     
             }
             if (switchboard.has(currentEvent)) {
                 // Checking if from event
@@ -113,10 +113,9 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
             }
             else if(shouldWait.has(currentEvent)) {
                 if(messageQ.has(currentEvent) && (is_stopped[currentEvent.p] < 0 || is_stopped[currentEvent.p] === eindx[i])) {
-                    processes[currentEvent.p] = Math.max(
-                        processes[currentEvent.p] - inTicks[currentEvent.p], 
-                        messageQ.get(currentEvent)
-                    ) + inTicks[currentEvent.p];
+                    processes[currentEvent.p][currentEvent.p] -= inTicks[currentEvent.p];
+                    processes[currentEvent.p] = processes[currentEvent.p].map((elementin, index) => Math.max(elementin, messageQ.get(currentEvent)[index]));
+                    processes[currentEvent.p][currentEvent.p] += inTicks[currentEvent.p];
                     // Message has been received and time updated
                     causalChain.set(inEvents[eindx[i]], [last_event[currentEvent.p], shouldWait.get(currentEvent)]);
                     // Causal links between events in case of messages
@@ -134,7 +133,7 @@ export function computeScalar(inEvents, inMessages, inTicks, result, causalChain
                 causalChain.set(inEvents[eindx[i]], last_event[currentEvent.p]);
             }
             if(is_stopped[currentEvent.p] < 0) {
-                result.set(inEvents[eindx[i]], processes[currentEvent.p]);
+                result.set(inEvents[eindx[i]], [].concat(processes[currentEvent.p]));
                 // Adding to results
                 last_event[currentEvent.p] = inEvents[eindx[i]];
                 // Last event to happen on the process

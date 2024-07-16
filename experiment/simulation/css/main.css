@@ -255,8 +255,8 @@ label.check-label {
     z-index: 4;
     opacity: 0;
     bottom: 140%;
-    right: -150%;
     display: inline;
+    white-space: nowrap;
     color: rgb(237, 255, 222);
 }
 

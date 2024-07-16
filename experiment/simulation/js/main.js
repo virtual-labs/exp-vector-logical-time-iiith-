@@ -1,6 +1,6 @@
 "use strict";
 
-import { computeScalar, createEvent, createMessage } from "./simulation.js";
+import { computeVector, createEvent, createMessage } from "./simulation.js";
 import { isElement, getPosition, getRelativePosition, rotateLine, lineParallel } from "./helper.js";
 
 const tellspace = document.getElementById("tellspace");
@@ -112,7 +112,7 @@ function manageTime(event) {
 
 // Function for updating times associated with each element
 function updateEventTimes() {
-    const cycleDetect = computeScalar(events, messages, ticks, event_time, causal_chain);
+    const cycleDetect = computeVector(events, messages, ticks, event_time, causal_chain);
     if(!cycleDetect) {
         let i = events.length - 1;
         while(i >= 0) {
@@ -128,13 +128,18 @@ function updateEventTimes() {
                 const toadd = document.createTextNode('e');
                 const toadd2 = document.createElement("sub");
                 const toadd3 = document.createTextNode(events[i].id.toString());
-                const toadd4 = document.createTextNode(':' + String(event_time.get(events[i])));
+                const toadd4 = document.createTextNode(': [' + event_time.get(events[i]).toString() + ']');
+                const toadd5 = document.createElement("sup");
+                const toadd6 = document.createTextNode("T");
 
                 toadd2.appendChild(toadd3);
+                toadd5.appendChild(toadd6);
                 eventtip.appendChild(toadd);
                 eventtip.appendChild(toadd2);
                 eventtip.appendChild(toadd4);
+                eventtip.appendChild(toadd5);
                 // Adding new time
+                eventtip.style.transform = 'translateX(' + String(events[i].t - getRelativePosition(eventtip, eventtip.parentElement.parentElement).x - eventtip.clientWidth / 2) + 'px)';
             }
             i--;
         }
@@ -145,9 +150,9 @@ function updateEventTimes() {
 
 // Helper function for drawing lines with arrows in displayspace
 function createArrowLine (event1, event2, startx, starty, gridx, gridy, used_processes, radius) {
-    const event1x = startx + (event_time.get(event1) - 1) * gridx;
+    const event1x = startx + (event_time.get(event1)[event1.p] - 1) * gridx;
     const event1y = starty + used_processes.get(event1.p) * gridy;
-    const event2x = startx + (event_time.get(event2) - 1) * gridx;
+    const event2x = startx + (event_time.get(event2)[event2.p] - 1) * gridx;
     const event2y = starty + used_processes.get(event2.p) * gridy;
     const toadd = document.createElementNS("http://www.w3.org/2000/svg", "g");
     // Graphics group for arrow
@@ -254,7 +259,7 @@ function displayCausalGraph(process = -1, time = -1) {
         while(lastStack.length > 0) {
             start_event = lastStack.pop();
             // Getting element
-            const myx = startx + (event_time.get(start_event) - 1) * gridx;
+            const myx = startx + (event_time.get(start_event)[start_event.p] - 1) * gridx;
             const myy = starty + used_processes.get(start_event.p) * gridy;
             // Getting position on svg
             if(myx > maxx) {
@@ -772,6 +777,8 @@ function createNode() {
     
     ticks.push(indefault);
     // Adding to array of process ticks
+    updateEventTimes();
+    displayCausalGraph();
 }
 
 function deleteNode() {
