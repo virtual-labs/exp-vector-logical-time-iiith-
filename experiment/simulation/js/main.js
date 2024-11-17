@@ -1,7 +1,8 @@
 "use strict";
 
 import { computeVector, createEvent, createMessage } from "./simulation.js";
-import { isElement, getPosition, getRelativePosition, rotateLine, lineParallel } from "./helper.js";
+import { isElement, getPosition, getRelativePosition, rotateLine, lineParallel, setInputFilter, Semaphore } from "./helper.js";
+import { generateTest } from "./generate.js";
 
 const tellspace = document.getElementById("tellspace");
 // Area of work
@@ -28,11 +29,102 @@ const displayspace = document.getElementById("displayspace");
 const pinboard = document.getElementById("pinboard");
 // Background
 
+const modechange = document.getElementById("mode");
+// Changing modes
+
+const checkanswerswrap = document.getElementById("wrapper");
+// Wraps around button for display purposes
+
+const displaywrap = document.getElementById("wrapper2");
+// Wraps around displayspace
+
 const nodes = [];
 // An array of all nodes in the distributed system
 
 const events = [];
 // Array of all events
+
+const wrappers = [checkanswerswrap, displaywrap];
+// Wrapping divisions
+
+const generator_params = document.getElementsByClassName("aparam");
+// Parameters for generating
+
+const generatebutton = document.getElementById("ordergenerate");
+// Generate 
+
+let mode = 0;
+/* Modes - 0 - Simulate
+         - 1 - Test
+*/
+
+let test_progress = 0;
+/* Progress -                       Process             Events              Messages
+                                Min         Max     Min         Max     Min         Max
+                0 - Easy        3           5       7           14      4           10
+                1 - Medium      5           7       14          21      8           20
+                2 - Hard        7           99      17          99      16          99
+*/
+
+let test_state = 0;
+// Test states - 0 - nothing has been done (newly entered generate mode) - 1 - generate has been clicked - 2 - check my answers clicked
+
+const DIFFICULTY = {
+    EASY: {
+        PRO: {
+            MIN: 3,
+            MAX: 5
+        },
+        EVE: {
+            MIN: 7,
+            MAX: 14
+        },
+        MES: {
+            MIN: 4,
+            MAX: 10
+        }
+    },
+    MEDIUM: {
+        PRO: {
+            MIN: 5,
+            MAX: 7
+        },
+        EVE: {
+            MIN: 14,
+            MAX: 21
+        },
+        MES: {
+            MIN: 8,
+            MAX: 20
+        }
+    },
+    HARD: {
+        PRO: {
+            MIN: 7,
+            MAX: 99
+        },
+        EVE: {
+            MIN: 17,
+            MAX: 99
+        },
+        MES: {
+            MIN: 16,
+            MAX: 99
+        }
+    }
+}
+
+Object.freeze(DIFFICULTY);
+// Treat as enum
+
+const check_answers = document.getElementById("check");
+// Check answers
+
+const speed = document.getElementById("speed");
+// Current difficulty indicator
+
+const needle = speed.querySelector("div.needle");
+// Selecting needle
 
 let max_events_offset = 0;
 // Local Co-ordinates in simspace  of the rightmost event
@@ -71,6 +163,14 @@ const causal_chain = new Map();
 
 let current_display_p = -1;
 let current_display_t = -1;
+
+const inmin = 1;
+const inmax = 5;
+const indefault = 1;
+// Ticking of processes, min, max
+
+let current_max_z = 0;
+// Helps move selected event tips to the front
 
 // Function is used to determine whether the current width can hold all events. Empirically determined
 function mysteryAdjustment(curwidth, vw, max_events_offset) {
@@ -111,10 +211,11 @@ function manageTime(event) {
 }
 
 // Function for updating times associated with each element
-function updateEventTimes() {
+function updateEventTimes(testing = false) {
     const cycleDetect = computeVector(events, messages, ticks, event_time, causal_chain);
     if(!cycleDetect) {
         let i = events.length - 1;
+        current_max_z = events.length;
         while(i >= 0) {
             const ID_FORMAT = events[i].p.toString() + '-' + events[i].t.toString() + '-tip';
             // Format of event tool tip
@@ -126,18 +227,74 @@ function updateEventTimes() {
                 }
                 // Remove all previous text
                 const toadd = document.createTextNode('e');
+                const toadd8 = document.createElement("span");
                 const toadd2 = document.createElement("sub");
                 const toadd3 = document.createTextNode(events[i].id.toString());
-                const toadd4 = document.createTextNode(': [' + event_time.get(events[i]).toString() + ']');
                 const toadd5 = document.createElement("sup");
                 const toadd6 = document.createTextNode("T");
+                toadd5.appendChild(toadd6);
+                let toadd4 = null;
+                if(testing) {
+                    const toadd14 = document.createElement("span");
+                    const toadd15 = document.createTextNode("[");
+                    toadd14.appendChild(toadd15);
+                    const toadd16 = document.createElement("input");
+                    toadd16.type = "number";
+                    toadd16.value = "";
+                    toadd16.min = 1;
+                    toadd16.max = 999;
+                    toadd16.classList.add("enquirer");
+                    setInputFilter(toadd16, function(value) {
+                        return /^\d*$/.test(value) && (value === "" || (
+                        parseInt(value) <= toadd6.max &&
+                        parseInt(value) >= toadd6.min))
+                    });
+                    const toadd17 = document.createElement("span");
+                    const toadd18 = document.createTextNode("]");
+                    toadd17.appendChild(toadd18);
+                    const toadd19 = document.createElement("sup");
+                    const toadd20 = document.createTextNode("T");
+                    toadd19.appendChild(toadd20);
+                    const toadd12 = document.createElement("div");
+                    toadd12.classList.add("flipper");
+                    const toadd7 = document.createElement("span");
+                    toadd7.classList.add("answerer");
+                    const toadd10 = document.createTextNode('[' + event_time.get(events[i]).toString() + ']');
+                    toadd7.appendChild(toadd10);
+                    toadd7.appendChild(toadd5);
+                    const toadd11 = document.createElement("span");
+                    toadd11.classList.add("separator");
+                    const toadd8 = document.createTextNode('|');
+                    toadd11.appendChild(toadd8);
+                    toadd12.appendChild(toadd11);
+                    toadd12.appendChild(toadd7);
+
+                    toadd4 = document.createElement("div");
+                    toadd4.appendChild(toadd14);
+                    toadd4.appendChild(toadd16);
+                    toadd4.appendChild(toadd17);
+                    toadd4.appendChild(toadd19);
+                    toadd4.appendChild(toadd12);
+                }
+                else {
+                    toadd4 = document.createTextNode('[' + event_time.get(events[i]).toString() + ']');
+                }
+                
 
                 toadd2.appendChild(toadd3);
-                toadd5.appendChild(toadd6);
+                toadd8.appendChild(toadd2);
                 eventtip.appendChild(toadd);
-                eventtip.appendChild(toadd2);
+                eventtip.appendChild(toadd8);
                 eventtip.appendChild(toadd4);
-                eventtip.appendChild(toadd5);
+                if(!testing) {
+                    eventtip.appendChild(toadd5);
+                }
+                eventtip.parentNode.style.zIndex = String(events.length - i);
+                eventtip.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    current_max_z++;
+                    eventtip.parentNode.style.zIndex = String(current_max_z);
+                }, true);
                 // Adding new time
                 eventtip.style.transform = 'translateX(' + String(events[i].t - getRelativePosition(eventtip, eventtip.parentElement.parentElement).x - eventtip.clientWidth / 2) + 'px)';
             }
@@ -372,7 +529,7 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
 }
 
 // Creating an event
-function createEventVisual(target, offsetX, noupdate = false) {
+function createEventVisual(target, offsetX, noupdate = false, testing = false) {
     const toadd = document.createElement("div");
     toadd.className = "event";
     toadd.style.left = String(offsetX - shapeOffset) + "px";
@@ -392,14 +549,20 @@ function createEventVisual(target, offsetX, noupdate = false) {
     toadd3.type = "checkbox";
     toadd3.className = "check-label";
     toadd3.id = ID_FORMAT + 'input';
-    toadd3.addEventListener("change", 
-        function(event) {
-            displayCausalGraph(
-                parseInt(toadd.dataset.process),
-                roundedX
-            );
-        }
-    );
+    if(testing) {
+        toadd3.checked = true;
+        toadd3.disabled = true;
+    }
+    else {
+        toadd3.addEventListener("change", 
+            function(event) {
+                displayCausalGraph(
+                    parseInt(toadd.dataset.process),
+                    roundedX
+                );
+            }
+        );
+    }
     // Creating an invisible checkbox
     const toadd4 = document.createElement("label");
     toadd4.className = "check-label";
@@ -468,11 +631,12 @@ function deleteEventVisual(target, currentTarget, noupdate) {
 }
 
 // Manages event creation and deletion
-function manageEventVisual(target, offsetX) {
+// Manages event creation and deletion
+function manageEventVisual(target, offsetX, testing = false) {
     if (addEventsMessage) {
         if(target.className == "slider-bone") {
             // We don't want one event on top of another for the sake of clarity
-            return createEventVisual(target, offsetX);
+            return createEventVisual(target, offsetX, false, testing);
         }
     }
     else {
@@ -555,19 +719,7 @@ function createMessageVisual(event) {
     if((!ticking)  && event.button < 4) {
         if(event.target.className === "slider-bone" && addEventsMessage) {
             if (!(messagestate === 1)) {
-                const toadd = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                toadd.setAttributeNS(null, "class", "message");
-                const relPos = getRelativePosition(event.target, event.currentTarget);
-                toadd.setAttributeNS(null, "x1", String(event.offsetX + relPos.x) + 'px');
-                toadd.setAttributeNS(null, "y1", String(relPos.y) + 'px');
-                toadd.setAttributeNS(null, "x2", String(event.offsetX + relPos.x) + 'px');
-                toadd.setAttributeNS(null, "y2", String(relPos.y) + 'px');
-                // Creating temporary line for guiding message drawing
-                messagespace.appendChild(toadd);
-                // Making the line visible
-                currentMessage = toadd;
-                fromMessage = event.target;
-                [fromEvent, fromEventobj] = manageEventVisual(event.target, event.offsetX);
+                createMessageViusalGraphics(event.target, event.currentTarget, event.offsetX);
                 messagestate = 1;
             }
             // Signal start of a potential message
@@ -576,6 +728,22 @@ function createMessageVisual(event) {
             manageEventVisual(event.target, -1);
         }
     }
+}
+
+function createMessageViusalGraphics(target, currentTarget, offsetX, testing = false) {
+    const toadd = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    toadd.setAttributeNS(null, "class", "message");
+    const relPos = getRelativePosition(target, currentTarget);
+    toadd.setAttributeNS(null, "x1", String(offsetX + relPos.x) + 'px');
+    toadd.setAttributeNS(null, "y1", String(relPos.y) + 'px');
+    toadd.setAttributeNS(null, "x2", String(offsetX + relPos.x) + 'px');
+    toadd.setAttributeNS(null, "y2", String(relPos.y) + 'px');
+    // Creating temporary line for guiding message drawing
+    messagespace.appendChild(toadd);
+    // Making the line visible
+    currentMessage = toadd;
+    fromMessage = target;
+    [fromEvent, fromEventobj] = manageEventVisual(target, offsetX, testing);
 }
 
 // Visualize creation
@@ -665,8 +833,12 @@ async function showCyclePopup() {
 // Creation of message ended in a point inside simspace
 function finishDragMessageVisual(event) {
     if((!ticking) && messagestate === 1) {
-        if(event.target.className === "slider-bone" || event.target.className === "event" || event.target.className === "check-label") {
-            if (fromMessage === event.target || fromMessage.contains(event.target)) {
+        console.log(event.target.className);
+        if(event.target.className === "slider-bone" || event.target.className === "event" || event.target.className === "check-label"
+            || event.target.className === "event-tip"
+        ) {
+            if (fromMessage === event.target || fromMessage.contains(event.target) 
+                    || fromMessage.querySelector(".event-tip") === event.target) {
                 messagespace.removeChild(currentMessage);
                 updateEventTimes();
                 currentMessage = null;
@@ -678,44 +850,7 @@ function finishDragMessageVisual(event) {
             }
             else {
                 messagestate = 3;
-                const relpos = getRelativePosition(event.target, event.currentTarget);
-                currentMessage.setAttributeNS(null, "x2", String(relpos.x + event.offsetX) + 'px');
-                currentMessage.setAttributeNS(null, "y2", String(relpos.y) + 'px');
-                const [toEvent, toEventobj] = createEventVisual(event.target, event.offsetX, true);
-                toEvent.classList.add('to');
-                // Setting message endpoint for line
-                fromEvent.classList.add('from');
-                // Setting message startpoint for line
-                messagespace.removeChild(currentMessage);
-                // Removing temporary line
-                currentMessage.addEventListener("click", deleteMessageVisual);
-                // Adding event listener for deletion
-                messages.push(
-                    createMessage(
-                        fromEventobj,
-                        toEventobj
-                    )
-                );
-                // Adding record of message to list of messages
-                if(updateEventTimes()) {
-                    // Cycle has been detected - undo message
-                    messages.pop();
-                    deleteEventVisual(toEvent, toEvent.parentElement);
-                    deleteEventVisual(fromEvent, fromEvent.parentElement);
-                    showCyclePopup();
-                }
-                else {
-                    messagespace.appendChild(
-                        drawMessage(currentMessage, fromMessage.dataset.process,
-                        event.target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
-                    );
-                    displayCausalGraph(current_display_p, current_display_t);
-                }
-                // Adding graphics group to show
-                currentMessage = null;
-                fromMessage = null;
-                fromEvent = null;
-                fromEventobj = null;
+                finishDragMessageVisualGraphics(event.target, event.currentTarget, event.offsetX);
                 messagestate = 0;
                 // Resetting state for next message
             }
@@ -726,104 +861,171 @@ function finishDragMessageVisual(event) {
     }
 }
 
-function createNode() {
-    
-    const inmin = 1;
-    const inmax = 5;
-    const indefault = 1;
-    
-    const toadd = document.createElement("div");
-    toadd.className = "slider-container";
-    // Creating a container for the node timeline
-    
-    const node_len = nodes.length;
-    // The index of this process
-
-    const toadd2 = document.createElement("input");
-    toadd2.type = "number";
-    toadd2.className = "increment";
-    toadd2.min = inmin.toString();
-    toadd2.max = inmax.toString();
-    toadd2.value = inmin.toString();
-    toadd2.dataset.process = node_len;
-    // Text boxes for setting increment in time step at each processor
-    // Change CSS values for class increment should the max increase beyond some digits
-    
-    const toadd3 = document.createElement("div");
-    toadd3.className = "slider";
-    // Representing timeline of each node
-    
-    const toadd4 = document.createElement("div");
-    toadd4.className = "slider-bone";
-    toadd4.dataset.process = node_len;
-    //toadd4.addEventListener("click", manageEventVisual);
-    toadd3.appendChild(toadd4);
-    // Adding straight line representing timeline
-    
-    toadd.appendChild(toadd2);
-    // Adding input to timeline
-
-    prepareInputbuttons(toadd, toadd2, inmin, inmax);
-    // Preparing input buttons
-    
-    toadd.appendChild(toadd3);
-    // Setting up the a container div for each node
-    
-    simspace.appendChild(toadd);
-    // Adding the container div to the simulation
-    
-    nodes.push(toadd);
-    // Keeping track of the container div
-    
-    ticks.push(indefault);
-    // Adding to array of process ticks
-    updateEventTimes();
-    displayCausalGraph();
+function finishDragMessageVisualGraphics(target, currentTarget, offsetX, testing = false) {
+    const relpos = getRelativePosition(target, currentTarget);
+    const [toEvent, toEventobj] = createEventVisual(target, offsetX, true, testing);
+    currentMessage.setAttributeNS(null, "x2", String(relpos.x + offsetX) + 'px');
+    currentMessage.setAttributeNS(null, "y2", String(relpos.y) + 'px');
+    toEvent.classList.add('to');
+    // Setting message endpoint for line
+    fromEvent.classList.add('from');
+    // Setting message startpoint for line
+    messagespace.removeChild(currentMessage);
+    // Removing temporary line
+    currentMessage.addEventListener("click", deleteMessageVisual);
+    // Adding event listener for deletion
+    messages.push(
+        createMessage(
+            fromEventobj,
+            toEventobj
+        )
+    );
+    // Adding record of message to list of messages
+    if(!testing && updateEventTimes()) {
+        // Cycle has been detected - undo message
+        messages.pop();
+        deleteEventVisual(toEvent, toEvent.parentElement);
+        deleteEventVisual(fromEvent, fromEvent.parentElement);
+        showCyclePopup();
+    }
+    else {
+        messagespace.appendChild(
+            drawMessage(currentMessage, fromMessage.dataset.process,
+            target.dataset.process, fromEvent.dataset.myx, toEvent.dataset.myx)
+        );
+        if(!testing) {
+            displayCausalGraph(current_display_p, current_display_t);
+        }
+    }
+    // Adding graphics group to show
+    currentMessage = null;
+    fromMessage = null;
+    fromEvent = null;
+    fromEventobj = null;
 }
 
-function deleteNode() {
-    nodes.pop();
-    ticks.pop();
-    const node_len = nodes.length;
-    let i = messages.length;
-    // Removing recod of invalid messages
-    while(i-- > 0) {
-        if(
-            parseInt(messages[i].event1.p >= node_len) ||
-            parseInt(messages[i].event2.p >= node_len)
-        ) {
-            messages.splice(i, 1);        
+function createNode(genMode, defaultval=indefault) {
+    return function(event) {
+        
+        
+        const toadd = document.createElement("div");
+        toadd.className = "slider-container";
+        // Creating a container for the node timeline
+        
+        const node_len = nodes.length;
+        // The index of this process
+
+        const toadd2 = document.createElement("input");
+        toadd2.type = "number";
+        toadd2.className = "increment";
+        toadd2.min = inmin.toString();
+        toadd2.max = (inmax > defaultval ? inmax.toString() : defaultval.toString());
+        toadd2.value = defaultval;
+        toadd2.dataset.process = node_len;
+        // Text boxes for setting increment in time step at each processor
+        // Change CSS values for class increment should the max increase beyond some digits
+        
+        const toadd3 = document.createElement("div");
+        toadd3.className = "slider";
+        // Representing timeline of each node
+        
+        const toadd4 = document.createElement("div");
+        toadd4.className = "slider-bone";
+        toadd4.dataset.process = node_len;
+        toadd3.appendChild(toadd4);
+        // Adding straight line representing timeline
+        
+        toadd.appendChild(toadd2);
+        // Adding input to timeline
+
+        if(genMode) {
+            prepareInputbuttons(toadd, toadd2, inmin, inmax);
+            // Preparing input buttons        
+        }
+        else {
+            toadd2.tabIndex = "-1";
+        }
+        
+        toadd.appendChild(toadd3);
+        // Setting up the a container div for each node
+        
+        simspace.appendChild(toadd);
+        // Adding the container div to the simulation
+        
+        nodes.push(toadd);
+        // Keeping track of the container div
+        
+        ticks.push(defaultval);
+        // Adding to array of process ticks
+
+        if(!genMode) {
+            return toadd4;
         }
     }
-    // Removing GUI of invalid messages
-    const messagelist = messagespace.getElementsByClassName("message");
-    for (const message of messagelist) {
-        if (
-                ( 
-                    parseInt(message.dataset.fromprocess) >= node_len
-                ) || 
-                (
-                    parseInt(message.dataset.toprocess) >= node_len
-                )
-        ) {
-            const linelement = message.getElementsByTagNameNS("http://www.w3.org/2000/svg", "line");
-            if (linelement.length === 1) {
-                deleteMessage(linelement[0], true);    
+}
+
+const createNodePlus = createNode(true);
+const createNodeMode = function(tick_val) {
+    return createNode(false, tick_val)();
+}
+
+function deleteNode(changeMode) {
+    return function(event) {
+        nodes.pop();
+        ticks.pop();
+        const node_len = nodes.length;
+        let i = messages.length;
+        // Removing recod of invalid messages
+        while(i-- > 0) {
+            if(
+                parseInt(messages[i].event1.p >= node_len) ||
+                parseInt(messages[i].event2.p >= node_len)
+            ) {
+                messages.splice(i, 1);        
             }
         }
+        // Removing GUI of invalid messages
+        const messagelist = messagespace.getElementsByClassName("message");
+        for (const message of messagelist) {
+            if (
+                    ( 
+                        parseInt(message.dataset.fromprocess) >= node_len
+                    ) || 
+                    (
+                        parseInt(message.dataset.toprocess) >= node_len
+                    )
+            ) {
+                const linelement = message.getElementsByTagNameNS("http://www.w3.org/2000/svg", "line");
+                if (linelement.length === 1) {
+                    deleteMessage(linelement[0], true);    
+                }
+            }
+        }
+        if(isElement(simspace.lastElementChild)) {
+            simspace.removeChild(simspace.lastElementChild);
+        }
+        // Removing invalid events
+        i = events.length;
+        while(i-- > 0) {
+            if(parseInt(events[i].p) >= node_len) {
+                events.splice(i, 1);
+            } 
+        }
+        if(!changeMode) {
+            updateEventTimes();
+            displayCausalGraph();
+        }
     }
-    if(isElement(simspace.lastElementChild)) {
-        simspace.removeChild(simspace.lastElementChild);
-    }
-    // Removing invalid events
-    i = events.length;
+}
+
+const deleteNodeMinus = deleteNode(false);
+const deleteNodeMode = deleteNode(true);
+
+function deleteAllNodes() {
+    let i = nodes.length;
     while(i-- > 0) {
-        if(parseInt(events[i].p) >= node_len) {
-            events.splice(i, 1);
-        } 
+        deleteNodeMode();
     }
-    updateEventTimes();
-    displayCausalGraph();
 }
 
 function updateModes() {
@@ -851,6 +1053,98 @@ function inputMode(event) {
     }
     if(addEventsMessage != oldevent) {
         updateModes();
+    }
+}
+
+function useMode(wrappingforanswers) {
+    return function(event) {
+        let newtext = null;
+        for (let ele of wrappingforanswers) {
+            ele.classList.toggle("hidden");
+        }
+        if(mode === 1) {
+            newtext = document.createTextNode("Test!");
+            window.addEventListener("load", windowChange);
+            window.addEventListener("resize", windowChange);
+
+            simspace.addEventListener("mousedown", createMessageVisual);
+            simspace.addEventListener("mousemove", dragMessageVisual);
+            simspace.addEventListener("mouseleave", endDragMessageVisual);
+            simspace.addEventListener("mouseup", finishDragMessageVisual);
+
+            document.getElementById("plus").addEventListener("click", createNodePlus);
+            document.getElementById("minus").addEventListener("click", deleteNodeMinus);
+
+            addMode.addEventListener("click", inputMode);
+            subMode.addEventListener("click", inputMode);
+            deleteAllNodes();
+            windowChange();
+            mode = 0;
+        }
+        else if (mode === 0) {
+            window.removeEventListener("load", windowChange);
+            window.removeEventListener("resize", windowChange);
+
+            simspace.removeEventListener("mousedown", createMessageVisual);
+            simspace.removeEventListener("mousemove", dragMessageVisual);
+            simspace.removeEventListener("mouseleave", endDragMessageVisual);
+            simspace.removeEventListener("mouseup", finishDragMessageVisual);
+
+            document.getElementById("plus").removeEventListener("click", createNodePlus);
+            document.getElementById("minus").removeEventListener("click", deleteNodeMinus);
+
+            addMode.removeEventListener("click", inputMode);
+            subMode.removeEventListener("click", inputMode);
+            newtext = document.createTextNode("Simulate");
+            addEventsMessage = true;
+            updateModes();
+            deleteAllNodes();
+            mode = 1;
+        }
+        else {
+            newtext = document.createTextNode("Test!");
+            for(let ele of wrappingforanswers) {
+                ele.classList.remove("hidden");
+            }
+            mode = 0;
+        }
+        test_state = 0;
+        while(event.target.firstChild) {
+            event.target.removeChild(event.target.lastChild);
+        }
+        event.target.appendChild(newtext);
+    };
+}
+
+function prepareGeneratorInput(elements) {
+    for (const el of elements) {
+        const inputbox = el.querySelector("input[type=number].input-number");
+        setInputFilter(inputbox, function(value) {
+            return /^\d*$/.test(value) && (value === "" || (
+            parseInt(value) <= parseInt(inputbox.max) &&
+            parseInt(value) >= parseInt(inputbox.min)))
+        });
+        inputbox.addEventListener("blur", function(event) {
+            if(inputbox.value === "") {
+                inputbox.value = inputbox.min;
+            }
+        });
+        const decrement = el.querySelector("span.input-number-decrement");
+        decrement.addEventListener('click', function(event) {
+            const oldval = parseInt(inputbox.value);
+            const min = parseInt(inputbox.min);
+            if(oldval > min) {
+                inputbox.value = String(oldval - 1);
+            }
+        });
+        const increment = el.querySelector("span.input-number-increment");
+        increment.addEventListener('click', function(event) {
+            const oldval = parseInt(inputbox.value);
+            const max = parseInt(inputbox.max);
+            if(oldval < max) {
+                inputbox.value = String(oldval + 1);
+            }
+        });
     }
 }
 
@@ -899,6 +1193,143 @@ function windowChange(event) {
     ticking = true;
 }
 
+async function generator(event) {
+    test_state = 1;
+    deleteAllNodes();
+    const process_number = parseInt(document.getElementById("processors-gen").value);
+    const event_number = parseInt(document.getElementById("events-gen").value);
+    const messages_number = parseInt(document.getElementById("messages-gen").value);
+    const tell_width = tellspace.getBoundingClientRect().width;
+    const event_padding = tell_width / 14.2;
+    console.log(event_padding);
+    const event_offset = [];
+    for(let i = 0; i < process_number; ++i) {
+        event_offset.push(event_padding / 2 + Math.random() * event_padding);
+    }
+    const message_set = new Set();
+    let max_ticks = 1;
+    switch(test_progress) {
+        case 2:
+            max_ticks += 2;
+        case 1:
+            max_ticks += 2;
+        default:
+        case 0:
+    }
+    const sliderBones = []
+    const outed = generateTest(process_number, event_number, event_padding, messages_number, test_progress, max_ticks);
+    for(const mes of outed.mes) {
+        message_set.add(mes.e1);
+        message_set.add(mes.e2);
+    }
+    for(let i = 0; i < process_number; ++i) {
+        sliderBones.push(createNodeMode(outed.tic[i]));
+    }
+    let max_time = 0;
+    for(const eve of outed.eve) {
+        if(!message_set.has(eve)) {
+            createEventVisual(sliderBones[eve.p], event_offset[eve.p] + eve.t, true, true);
+        }
+        max_time = (max_time > event_offset[eve.p] + eve.t) ? max_time : (event_offset[eve.p] + eve.t);
+    }
+    simspace.width = String(max_time + 5 * event_padding) + 'px';
+    const throttler = new Semaphore(1);
+    const all_at_once = function(sliderBones, simspace, e1, e2, event_offset, process_number) {
+        createMessageViusalGraphics(sliderBones[e1.p], simspace, event_offset[e1.p] + e1.t, true);
+        finishDragMessageVisualGraphics(sliderBones[e2.p], simspace, event_offset[e2.p] + e2.t, true);
+    }
+    for(const mes of outed.mes) {
+        await throttler.acquire();
+        const e1 = mes.e1;
+        const e2 = mes.e2;
+        all_at_once(sliderBones, simspace, e1, e2, event_offset, process_number);
+        throttler.release();
+    }
+    updateEventTimes(true);
+}
+
+function checkAnswers(event) {
+    if(event.button <= 1 && test_state === 1) {
+        test_state = 2;
+        checkLogic();
+    }
+}
+
+function checkLogic() {
+    const tips = document.querySelectorAll("span.event-tip");
+    let wrong = false;
+    for(const tip of tips) {
+        const useranswer = tip.querySelector("input[type=number].enquirer");
+        const correctanswer = tip.querySelector("span.answerer");
+        const flipper = tip.querySelector("div.flipper");
+        if(parseInt(useranswer.value) === parseInt(correctanswer.textContent)) {
+            correctanswer.classList.add("correct");
+        }
+        else {
+            correctanswer.classList.add("wrong");
+            wrong = true;
+        }
+        flipper.classList.add("answered");
+        const dims = tip.getBoundingClientRect();
+        const dims2 = tip.parentNode.getBoundingClientRect();
+        tip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
+    }
+    if(!wrong && test_progress < 2) {
+        speed.classList.toggle("clickable");
+    }
+}
+
+function upgradeDifficulty(event) {
+    if(event.button <= 1 && test_state === 2 && speed.classList.contains("clickable")) {
+        test_state = 2;
+        speed.classList.toggle("clickable");
+        upgradeDifficultyLogic();
+    }
+}
+
+function setMinMaxVal(ele, min, max) {
+    ele.min = min;
+    ele.max = max;
+    ele.value = min;
+}
+
+function upgradeDifficultyLogic() {
+    let event_min = DIFFICULTY.HARD.EVE.MIN;
+    let event_max = DIFFICULTY.HARD.EVE.MAX;
+    let proc_min = DIFFICULTY.HARD.PRO.MIN;
+    let proc_max = DIFFICULTY.HARD.PRO.MAX;
+    let mes_min = DIFFICULTY.HARD.MES.MIN;
+    let mes_max = DIFFICULTY.HARD.MES.MAX;
+    switch(test_progress) {
+        case 0:
+            needle.style.transform = `rotate(90deg)`;
+            event_min = DIFFICULTY.MEDIUM.EVE.MIN;
+            event_max = DIFFICULTY.MEDIUM.EVE.MAX;
+            proc_min = DIFFICULTY.MEDIUM.PRO.MIN;
+            proc_max = DIFFICULTY.MEDIUM.PRO.MAX;
+            mes_min = DIFFICULTY.MEDIUM.MES.MIN;
+            mes_max = DIFFICULTY.MEDIUM.MES.MAX;
+            test_progress = 1;
+            break;
+        case 1:
+            needle.style.transform = `rotate(155deg)`;
+            test_progress = 2;
+    }
+    for(const generator of generator_params) {
+        const inputbox = generator.querySelector("input[type=number].input-number");
+        if(inputbox.getAttribute("id").includes("events")) {
+            setMinMaxVal(inputbox, event_min, event_max);
+        }
+        else if(inputbox.getAttribute("id").includes("processors")) {
+            setMinMaxVal(inputbox, proc_min, proc_max);
+        }
+        else if(inputbox.getAttribute("id").includes("messages")) {
+            setMinMaxVal(inputbox, mes_min, mes_max);
+        }
+    }
+}
+
+prepareGeneratorInput(generator_params);
 
 window.addEventListener("load", windowChange);
 window.addEventListener("resize", windowChange);
@@ -913,11 +1344,23 @@ simspace.addEventListener("mouseleave", endDragMessageVisual);
 simspace.addEventListener("mouseup", finishDragMessageVisual);
 // Listening for events leading to creation of a message
 
-document.getElementById("plus").addEventListener("click", createNode);
-document.getElementById("minus").addEventListener("click", deleteNode);
+document.getElementById("plus").addEventListener("click", createNodePlus);
+document.getElementById("minus").addEventListener("click", deleteNodeMinus);
 // adding and deleting nodes on click
 
 addMode.addEventListener("click", inputMode);
 subMode.addEventListener("click", inputMode);
 // Switching between adding and deleting events/messages
+
+modechange.addEventListener("click", useMode(wrappers));
+// Switching between test mode and simulate mode
+
+generatebutton.addEventListener("click", generator);
+// Generates a new test on click
+
+check_answers.addEventListener("click", checkAnswers);
+// Checks answers of test
+
+speed.addEventListener("click", upgradeDifficulty);
+// Upgrade difficulty
 updateModes();

@@ -72,7 +72,7 @@ function modifiedGaussianRandom(mean=1, stdev=1, process_number=2) {
 // Durstenfeld shuffle
 function shuffleArray(array) {
     for (let i = array.length - 1; i >= 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = getRandomInt(i + 1);
         [array[i], array[j]] = [array[j], array[i]];
     }
 }

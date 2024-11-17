@@ -18,15 +18,43 @@
 				</div>
 		</div>
 		<div id = "buttonspace">
-			<h3 class="cp">Action on clicking on events and messages:</h3>
-			<div id="eventadd">
-				<button id="add">Add</button>
-				<button id="subtract">Delete</button>
+			<div class="wrapperalike">
+				<h3 class="cp">Action on clicking on events and messages:</h3>
+				<div id="eventadd">
+					<button id="add">Add</button>
+					<button id="subtract">Delete</button>
+				</div>
 			</div>
-			<h3 class="cp">Change process count:</h3>
-			<div id="processoradd">
-				<button id="plus">+</button>
-				<button id="minus">&#8211;</button>
+			<div class="wrapperalike">
+				<h3 class="cp">Change process count:</h3>
+				<div id="processoradd">
+					<button id="plus">+</button>
+					<button id="minus">&#8211;</button>
+				</div>
+			</div>
+			<div id="testcontrols">
+				<div id="speed" class="difficulty">
+					<div class="gauge min-scaled">
+						<div class="slice-colors">
+							<div class="st slice-item"></div>
+							<div class="st slice-item"></div>
+							<div class="st slice-item"></div>
+						</div>
+						<div class="needle"></div>
+						<div class="gauge-center">
+							<div class="label">Difficulty</div>
+						</div>
+					</div>
+				</div>
+				<div id="testspace">
+					<h3 class="cp">Ready to check your understanding?</h3>
+					<div>
+						<button id="mode">Test!</button>
+					</div>
+					<div id="wrapper" class="hidden">
+						<button id="check">Check my Answers</button>	
+					</div>
+				</div>
 			</div>
 		</div>
 		<div id = "cyclespace" class = "hidden">
@@ -34,19 +62,49 @@
 				Inconsistent state - resetting to last consistent state
 			</div>
 		</div>
-		<div id="displayspace">
-			<svg id = "causalspace">
-				<filter id='noiseFilter'>
-					<feTurbulence 
-					  type='fractalNoise' 
-					  baseFrequency='0.65' 
-					  numOctaves='3' 
-					  stitchTiles='stitch'/>
-				  </filter>
-				  <rect id="pinboard" filter='url(#noiseFilter)'/>
-				<g id = "causalgroup">
-				</g>
-			</svg>
+		<div id="antiwrapper">
+			<div id="generatespace">
+				<div class="header-border">
+					<h2 class="heading"><span>Generation Parameters</span></h2>
+					<div id="params">
+						<div class="aparam">
+							<label for="processors-gen"><h4>Number of pocessors:</h4></label>
+							<span class="input-number-decrement">–</span>
+							<input class="input-number" id="processors-gen" type="number" value="3" min="3" max="5">
+							<span class="input-number-increment">+</span>
+						</div>
+						<div class="aparam">
+							<label for="events-gen"><h4>Number of events:</h4></label>
+							<span class="input-number-decrement">–</span>
+							<input class="input-number" id="events-gen" type="number" value="7" min="7" max="14">
+							<span class="input-number-increment">+</span>
+						</div>
+						<div class="aparam">
+							<label for="messages-gen"><h4>Number of messages:</h4></label>
+							<span class="input-number-decrement">–</span>
+							<input class="input-number" id="messages-gen" type="number" value="4" min="4" max="10">
+							<span class="input-number-increment">+</span>
+						</div>
+						<button id="ordergenerate">Generate!</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="wrapper2">
+			<div id="displayspace">
+				<svg id = "causalspace">
+					<filter id='noiseFilter'>
+						<feTurbulence 
+							type='fractalNoise' 
+							baseFrequency='0.65' 
+							numOctaves='3' 
+							stitchTiles='stitch'/>
+						</filter>
+						<rect id="pinboard" filter='url(#noiseFilter)'/>
+					<g id = "causalgroup">
+					</g>
+				</svg>
+			</div>
 		</div>
 	</main>
 	

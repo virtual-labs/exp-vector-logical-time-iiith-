@@ -80,3 +80,70 @@ function rotatePoint(p1, pc, angle) {
       y: (p1.x - pc.x) * Math.sin(degangle) + (p1.y - pc.y) * Math.cos(degangle) + pc.y
     };
 }
+
+export function setInputFilter(textbox, inputFilter) {
+    textbox.addEventListener("input", (event) => {
+        if(event.data !== null) {
+            if(!textbox.hasOwnProperty("oldValue")) {
+                textbox.oldValue = "";
+            }
+            const new_val = textbox.oldValue + event.data; 
+            if(inputFilter(new_val)) {
+                textbox.oldValue = new_val;
+            }
+            else if (textbox.hasOwnProperty("oldValue")) {
+                textbox.value = textbox.oldValue;
+            }
+        }
+    });
+}
+
+export class Semaphore {
+  
+    constructor(max) {
+        this.counter = 0;
+        this.max = max;
+        this.waiting = [];    
+    }
+    
+    take ()
+    {
+        if (this.waiting.length > 0 && this.counter < this.max) {
+            this.counter++;
+            let promise = waiting.shift();
+            promise.resolve();
+        }
+    }
+    
+    acquire () {
+        if(this.counter < this.max) {
+            this.counter++;
+            return new Promise(resolve => {
+                resolve();
+            });
+        } 
+        else {
+            return new Promise((resolve, err) => {
+                this.waiting.push({resolve: resolve, err: err});
+            });
+        }
+    }
+      
+    release () {
+        this.counter--;
+        this.take();
+    }
+    
+    purge () {
+        let unresolved = waiting.length;
+    
+        for (let i = 0; i < unresolved; i++) {
+            waiting[i].err('Purging uncompleted tasks');
+        }
+
+        counter = 0;
+        waiting = [];
+      
+        return unresolved;
+    }
+}
