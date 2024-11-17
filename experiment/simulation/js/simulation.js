@@ -15,7 +15,7 @@ inArray is an array of events
 inMap is a map of processor-increment values or it can be a scalar value
 */
 // Represents events
-class Event {
+export class Event {
     static counter = 0;
     constructor(time, processor) {
         this.t  = time;
@@ -26,7 +26,7 @@ class Event {
 }
 
 // Represents Messages
-class Message {
+export class Message {
     static counter = 0;
     constructor(event1, event2) {
         this.e1 = event1;
@@ -160,4 +160,84 @@ export function createEvent(time, processor) {
 
 export function createMessage(event1, event2) {
     return new Message(event1, event2);
+}
+
+export function setInputFilter(textbox, inputFilter) {
+    [
+      "input",
+      "keydown",
+      "keyup",
+      "mousedown",
+      "mouseup",
+      "select",
+      "contextmenu",
+      "drop",
+    ].forEach(function (event) {
+        textbox.addEventListener(event, function () {
+            if (inputFilter(this.value)) {
+                this.oldValue = this.value
+                this.oldSelectionStart = this.selectionStart
+                this.oldSelectionEnd = this.selectionEnd
+            } 
+            else if (this.hasOwnProperty("oldValue")) {
+                this.value = this.oldValue
+                if(this.oldSelectionEnd !== null && this.oldSelectionEnd !== null) {
+                    this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd)
+                }
+            } 
+            else {
+                this.value = ""
+            }
+        })
+    })
+}
+  
+export class Semaphore {
+      
+    constructor(max) {
+        this.counter = 0;
+        this.max = max;
+        this.waiting = [];    
+    }
+      
+    take ()
+    {
+        if (this.waiting.length > 0 && this.counter < this.max) {
+            this.counter++;
+            let promise = waiting.shift();
+            promise.resolve();
+        }
+    }
+      
+    acquire () {
+        if(this.counter < this.max) {
+            this.counter++;
+            return new Promise(resolve => {
+                resolve();
+            });
+        } 
+        else {
+            return new Promise((resolve, err) => {
+                this.waiting.push({resolve: resolve, err: err});
+            });
+        }
+    }
+        
+    release () {
+        this.counter--;
+        this.take();
+    }
+      
+    purge () {
+        let unresolved = waiting.length;
+    
+        for (let i = 0; i < unresolved; i++) {
+            waiting[i].err('Purging uncompleted tasks');
+        }
+
+        counter = 0;
+        waiting = [];
+    
+        return unresolved;
+    }
 }
