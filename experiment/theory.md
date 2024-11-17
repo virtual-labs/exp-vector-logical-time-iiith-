@@ -1,11 +1,11 @@
-# Introduction
+### Introduction
 
-## Model of a Distributed System
+#### Model of a Distributed System
 
 1. Process - It is a sequence of events. These events are defined based on application. The sequence has total ordering - event _a_ occurs before event _b_ if _a_ happens before _b_. Sending or receiving messages between processes are also event. 
 2. Distributed System - A collection of processes as defined before, which only communicate via messages.
 
-## Happens Before relation
+#### Happens Before relation
 
 The 'happens before' relation, represented with $\rightarrow$ represents the following three conditions:
 
@@ -17,7 +17,7 @@ It is possible for two events *a* and *b* to have both $a \nrightarrow b$ and $b
 
 This also shows that this relation can give only a partial ordering of events on the system.
 
-# Logical Clock
+### Logical Clock
 
 A clock *C* for a process *P* is an incrementing counter assigning each value it takes to an event occurring in that process. This number may bear no relationship with the physical time at the process P. For a system of such clocks, they must satisfy the *clock condition*. If an event *a* happens before event *b*, then the time associated with *a* must be less than that assigned to *b*.  
     Formally,
@@ -28,9 +28,9 @@ A clock *C* for a process *P* is an incrementing counter assigning each value it
 Strong consistency is when the system of clocks satisfy:
     $$a \rightarrow b \Leftrightarrow C(a) < C(b)$$
 
-## Vector Logical Clock
+#### Vector Logical Clock
 
-A number of integers (one for each process) is used to keep track of time in case of a vector logical clock. They are grouped into a vector.
+A number of non-negative integers (one for each process) is used to keep track of time in case of a vector logical clock. They are grouped into a vector.
 While one clock time is assigned by the vector to the process itself and used to count local events, other times represent the knowledge of advance in 
 time the process has of other processes.
 
@@ -38,7 +38,7 @@ A vector timestamp is in the following format:
 
 $$vt_i [1\dots n]$$
 
-## Rules for Ordering
+#### Rules for Ordering
 
 1. Local Rule:
     Each process P<sub>i</sub> increments its clock C<sub>i</sub> in the vector between any two immediately following events. This increment is done before the first event in a process' timeline of events as well.
