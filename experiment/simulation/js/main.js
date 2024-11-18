@@ -235,21 +235,49 @@ function updateEventTimes(testing = false) {
                 toadd5.appendChild(toadd6);
                 let toadd4 = null;
                 if(testing) {
-                    const toadd14 = document.createElement("span");
-                    const toadd15 = document.createTextNode("[");
+                    const ided = "enquirer-" + String(i);
+                    const toadd14 = document.createElement("label");
+                    toadd14.classList.add("lbu");
+                    toadd14.htmlFor = ided;
+                    const toadd15 = document.createTextNode(":[");
                     toadd14.appendChild(toadd15);
                     const toadd16 = document.createElement("input");
-                    toadd16.type = "number";
+                    toadd16.type = "text";
                     toadd16.value = "";
-                    toadd16.min = 1;
-                    toadd16.max = 999;
                     toadd16.classList.add("enquirer");
+                    toadd16.id = ided;
                     setInputFilter(toadd16, function(value) {
-                        return /^\d*$/.test(value) && (value === "" || (
-                        parseInt(value) <= toadd6.max &&
-                        parseInt(value) >= toadd6.min))
+                        const test_val = /^[ ]*\d+[ ]*(,[ ]*\d+[ ]*)*,?[ ]*\d*[ ]*$/.test(value)
+                        || value === "";
+                        if(!ticking && test_val) {
+                            window.requestAnimationFrame(() => {
+                                toadd16.setAttribute("size", value.length);
+                                const dims = eventtip.getBoundingClientRect();
+                                const dims2 = eventtip.parentNode.getBoundingClientRect();
+                                eventtip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
+                                ticking = false;
+                            });
+                            ticking = true;
+                        }
+                        return test_val;
                     });
-                    const toadd17 = document.createElement("span");
+                    toadd16.addEventListener("focus", (event) => {
+                        toadd16.setAttribute("size", 
+                            (toadd16.value.length === 0) ? 1 : toadd16.value.length);
+                        const dims = eventtip.getBoundingClientRect();
+                        const dims2 = eventtip.parentNode.getBoundingClientRect();
+                        eventtip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
+                        ticking = false;
+                    });
+                    toadd16.addEventListener("blur", (event) => {
+                        toadd16.setAttribute("size", null);
+                        const dims = eventtip.getBoundingClientRect();
+                        const dims2 = eventtip.parentNode.getBoundingClientRect();
+                        eventtip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
+                    });
+                    const toadd17 = document.createElement("label");
+                    toadd17.classList.add("rbu");
+                    toadd17.htmlFor = ided;
                     const toadd18 = document.createTextNode("]");
                     toadd17.appendChild(toadd18);
                     const toadd19 = document.createElement("sup");
@@ -259,15 +287,23 @@ function updateEventTimes(testing = false) {
                     toadd12.classList.add("flipper");
                     const toadd7 = document.createElement("span");
                     toadd7.classList.add("answerer");
-                    const toadd10 = document.createTextNode('[' + event_time.get(events[i]).toString() + ']');
+                    const toadd21 = document.createElement("span");
+                    const toadd22 = document.createTextNode('[');
+                    toadd21.appendChild(toadd22);
+                    const toadd10 = document.createTextNode(event_time.get(events[i]).toString());
                     toadd7.appendChild(toadd10);
-                    toadd7.appendChild(toadd5);
+                    const toadd23 = document.createElement("span");
+                    const toadd24 = document.createTextNode(']');
+                    toadd23.appendChild(toadd24);
                     const toadd11 = document.createElement("span");
                     toadd11.classList.add("separator");
                     const toadd8 = document.createTextNode('|');
                     toadd11.appendChild(toadd8);
                     toadd12.appendChild(toadd11);
+                    toadd12.appendChild(toadd21);
                     toadd12.appendChild(toadd7);
+                    toadd12.appendChild(toadd23);
+                    toadd12.appendChild(toadd5);
 
                     toadd4 = document.createElement("div");
                     toadd4.appendChild(toadd14);
@@ -282,21 +318,29 @@ function updateEventTimes(testing = false) {
                 
 
                 toadd2.appendChild(toadd3);
+                toadd8.appendChild(toadd);
                 toadd8.appendChild(toadd2);
-                eventtip.appendChild(toadd);
                 eventtip.appendChild(toadd8);
                 eventtip.appendChild(toadd4);
                 if(!testing) {
                     eventtip.appendChild(toadd5);
                 }
-                eventtip.parentNode.style.zIndex = String(events.length - i);
+                eventtip.parentNode.style.zIndex = String(4 + events.length - i);
                 eventtip.addEventListener("click", (event) => {
                     event.stopPropagation();
-                    current_max_z++;
-                    eventtip.parentNode.style.zIndex = String(current_max_z);
+                    if(!ticking) {
+                        window.requestAnimationFrame((event) => {
+                            current_max_z++;
+                            eventtip.parentNode.style.zIndex = String(current_max_z);
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
                 }, true);
                 // Adding new time
-                eventtip.style.transform = 'translateX(' + String(events[i].t - getRelativePosition(eventtip, eventtip.parentElement.parentElement).x - eventtip.clientWidth / 2) + 'px)';
+                const dims = eventtip.getBoundingClientRect();
+                const dims2 = eventtip.parentNode.getBoundingClientRect();
+                eventtip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
             }
             i--;
         }
@@ -833,7 +877,6 @@ async function showCyclePopup() {
 // Creation of message ended in a point inside simspace
 function finishDragMessageVisual(event) {
     if((!ticking) && messagestate === 1) {
-        console.log(event.target.className);
         if(event.target.className === "slider-bone" || event.target.className === "event" || event.target.className === "check-label"
             || event.target.className === "event-tip"
         ) {
@@ -940,7 +983,7 @@ function createNode(genMode, defaultval=indefault) {
 
         if(genMode) {
             prepareInputbuttons(toadd, toadd2, inmin, inmax);
-            // Preparing input buttons        
+            // Preparing input buttons   
         }
         else {
             toadd2.tabIndex = "-1";
@@ -958,7 +1001,10 @@ function createNode(genMode, defaultval=indefault) {
         ticks.push(defaultval);
         // Adding to array of process ticks
 
-        if(!genMode) {
+        if(genMode) {
+            updateEventTimes();
+        }
+        else {
             return toadd4;
         }
     }
@@ -1200,8 +1246,7 @@ async function generator(event) {
     const event_number = parseInt(document.getElementById("events-gen").value);
     const messages_number = parseInt(document.getElementById("messages-gen").value);
     const tell_width = tellspace.getBoundingClientRect().width;
-    const event_padding = tell_width / 14.2;
-    console.log(event_padding);
+    const event_padding = tell_width / 10.15;
     const event_offset = [];
     for(let i = 0; i < process_number; ++i) {
         event_offset.push(event_padding / 2 + Math.random() * event_padding);
@@ -1255,19 +1300,39 @@ function checkAnswers(event) {
     }
 }
 
+function answerToArray(answer) {
+    const without_whitespace = answer.replaceAll(' ','');
+    return without_whitespace.split(',').map(Number);
+}
+
 function checkLogic() {
     const tips = document.querySelectorAll("span.event-tip");
     let wrong = false;
     for(const tip of tips) {
-        const useranswer = tip.querySelector("input[type=number].enquirer");
+        const useranswer = tip.querySelector("input[type=text].enquirer");
         const correctanswer = tip.querySelector("span.answerer");
         const flipper = tip.querySelector("div.flipper");
-        if(parseInt(useranswer.value) === parseInt(correctanswer.textContent)) {
-            correctanswer.classList.add("correct");
-        }
-        else {
+        const user_array = answerToArray(useranswer.value);
+        const correct_array = answerToArray(correctanswer.textContent);
+        let local_wrong = false;
+        const declareWrong = () => {
             correctanswer.classList.add("wrong");
             wrong = true;
+            local_wrong = true;
+        };
+        if(user_array.length === correct_array.length) {
+            for(let i = 0; i < user_array.length; ++i) {
+                if(user_array[i] !== correct_array[i]) {
+                    declareWrong();
+                    break;
+                }
+            }
+        }
+        else {
+            declareWrong();
+        }
+        if(! local_wrong) {
+            correctanswer.classList.add("correct");
         }
         flipper.classList.add("answered");
         const dims = tip.getBoundingClientRect();
