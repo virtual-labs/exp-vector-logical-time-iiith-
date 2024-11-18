@@ -206,7 +206,7 @@ function manageTime(commanded = false, commandedpos = 100) {
                 }
             });
             window.requestAnimationFrame((time) => {
-                tellspace.scrollTo(100, 0);
+                tellspace.scrollTo(20, 0);
                 a_observ.observe(simspace);
                 // Observe resizes
                 simspace.style.width = String(commandedpos) + 'px';
@@ -1332,8 +1332,12 @@ async function generator(event) {
         throttler.release();
     }
     const a_slider = simspace.querySelector("div.slider");
-    manageTime(true, max_time + 
-        getRelativePosition(a_slider, simspace).x - a_slider.getBoundingClientRect().width / 2 + 5 * event_padding);
+    const new_width = max_time 
+        + getRelativePosition(a_slider, simspace).x 
+        - a_slider.getBoundingClientRect().width / 2 
+        + 5 * event_padding ;
+    const disp_width = tellspace.getBoundingClientRect().width;
+    manageTime(true, (new_width > disp_width) ? new_width : disp_width);
     updateEventTimes(true);
 }
 
