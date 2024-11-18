@@ -172,13 +172,16 @@ const indefault = 1;
 let current_max_z = 0;
 // Helps move selected event tips to the front
 
+let gen_tick = false;
+// Ticking for generator button
+
 // Function is used to determine whether the current width can hold all events. Empirically determined
 function mysteryAdjustment(curwidth, vw, max_events_offset) {
     return curwidth - 13 - 10 * vw >= max_events_offset;
 }
 
 // Function is used to adjust time
-function manageTime(event) {
+function manageTime(commanded = false, commandedpos = 100) {
     if (!ticking) {
         const scrollwidth = tellspace.scrollWidth;
         const clientwidth = tellspace.clientWidth;
@@ -188,25 +191,48 @@ function manageTime(event) {
 
         const curwidth    = parseFloat(simspace.style.width.slice(0, -2));
         // Getting current width
-
-        window.requestAnimationFrame(function() {
-            // If a scrollbar is required
-            if(scrollwidth > clientwidth) {
-                if(scrollwidth - clientwidth <= tellspace.scrollLeft + 1) {
-                    // If the scrollbar is at max right, add some more space
-                    tellspace.scrollTo(scrollwidth - clientwidth - 4, 0);
-                    simspace.style.width = String(curwidth + 5) + 'px';
+        if(commanded) {
+            ticking = true;
+            const a_observ = new ResizeObserver((entries) => {
+                for (const e of entries) {
+                    if(Math.floor(parseFloat(e.target.style.width.slice(0, -2))) === Math.floor(commandedpos)) {
+                        a_observ.unobserve(e.target);
+                        // Resize has achieved the correct width
+                    }
+                    else {
+                        e.target.style.width = String(commandedpos) + 'px';
+                        // Resize failed. Try again
+                    }
                 }
-                else if (tellspace.scrollLeft <= 1 && curwidth - 5 >= clientwidth && mysteryAdjustment(curwidth, vw, max_events_offset)) {
-                    // If the scrollbar is at max left delete some space
-                    // Don't let the space get too small or shrink beyond an event
-                    tellspace.scrollTo(4, 0);
-                    simspace.style.width = String(curwidth - 5) + 'px';
+            });
+            window.requestAnimationFrame((time) => {
+                tellspace.scrollTo(100, 0);
+                a_observ.observe(simspace);
+                // Observe resizes
+                simspace.style.width = String(commandedpos) + 'px';
+                ticking = false;
+            });
+        }
+        else {
+            window.requestAnimationFrame(function() {
+                // If a scrollbar is required
+                if(scrollwidth > clientwidth) {
+                    if(scrollwidth - clientwidth <= tellspace.scrollLeft + 1) {
+                        // If the scrollbar is at max right, add some more space
+                        tellspace.scrollTo(scrollwidth - clientwidth - 4, 0);
+                        simspace.style.width = String(curwidth + 5) + 'px';
+                    }
+                    else if (tellspace.scrollLeft <= 1 && curwidth - 5 >= clientwidth && mysteryAdjustment(curwidth, vw, max_events_offset)) {
+                        // If the scrollbar is at max left delete some space
+                        // Don't let the space get too small or shrink beyond an event
+                        tellspace.scrollTo(4, 0);
+                        simspace.style.width = String(curwidth - 5) + 'px';
+                    }
                 }
-            }
-            ticking = false;
-        });
-        ticking = true;
+                ticking = false;
+            });
+            ticking = true;
+        }
     }
 }
 
@@ -536,13 +562,19 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
     const toadd2 = document.createElement("div");
     toadd2.className = "quantity-button quantity-up";
     toadd2.appendChild(document.createTextNode("+"));
-    toadd2.addEventListener("click", function() {
-        const oldval = parseInt(target2.value);
-        if(oldval < inmax) {
-            target2.value = String(oldval + 1);
-            ticks[target2.dataset.process] += 1;
-            if(mytarget.getElementsByClassName("event").length > 0) {
-                updateEventTimes();
+    toadd2.addEventListener("click", function(event) {
+        if(event.button <= 1 && !ticking) {
+            const oldval = parseInt(target2.value);
+            if(oldval < inmax) {
+                target2.value = String(oldval + 1);
+                ticks[target2.dataset.process] += 1;
+                if(mytarget.getElementsByClassName("event").length > 0) {
+                    ticking = true;
+                    window.requestAnimationFrame((tim) => {
+                        updateEventTimes();
+                        ticking = false;
+                    });
+                }
             }
         }
     });
@@ -551,13 +583,19 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
     const toadd3 = document.createElement("div");
     toadd3.className = "quantity-button quantity-down";
     toadd3.appendChild(document.createTextNode("-"));
-    toadd3.addEventListener("click", function() {
-        const oldval = parseInt(target2.value);
-        if(oldval > inmin) {
-            target2.value = String(oldval - 1);
-            ticks[target2.dataset.process] -= 1;
-            if(mytarget.getElementsByClassName("event").length > 0) {
-                updateEventTimes();
+    toadd3.addEventListener("click", function(event) {
+        if(event.button <= 1 && !ticking) {
+            const oldval = parseInt(target2.value);
+            if(oldval > inmin) {
+                target2.value = String(oldval - 1);
+                ticks[target2.dataset.process] -= 1;
+                if(mytarget.getElementsByClassName("event").length > 0) {
+                    ticking = true;
+                    window.requestAnimationFrame((tim) => {
+                        updateEventTimes();
+                        ticking = false;
+                    });
+                }
             }
         }
     });
@@ -1277,26 +1315,36 @@ async function generator(event) {
         }
         max_time = (max_time > event_offset[eve.p] + eve.t) ? max_time : (event_offset[eve.p] + eve.t);
     }
-    simspace.width = String(max_time + 5 * event_padding) + 'px';
     const throttler = new Semaphore(1);
     const all_at_once = function(sliderBones, simspace, e1, e2, event_offset, process_number) {
-        createMessageViusalGraphics(sliderBones[e1.p], simspace, event_offset[e1.p] + e1.t, true);
-        finishDragMessageVisualGraphics(sliderBones[e2.p], simspace, event_offset[e2.p] + e2.t, true);
+        const off1 = event_offset[e1.p] + e1.t;
+        const off2 = event_offset[e2.p] + e2.t;
+        createMessageViusalGraphics(sliderBones[e1.p], simspace, off1, true);
+        finishDragMessageVisualGraphics(sliderBones[e2.p], simspace, off2, true);
+        return (off1 > off2) ? off1 : off2;
     }
     for(const mes of outed.mes) {
         await throttler.acquire();
         const e1 = mes.e1;
         const e2 = mes.e2;
-        all_at_once(sliderBones, simspace, e1, e2, event_offset, process_number);
+        const new_max = all_at_once(sliderBones, simspace, e1, e2, event_offset, process_number);
+        max_time = (max_time > new_max) ? max_time : new_max;
         throttler.release();
     }
+    const a_slider = simspace.querySelector("div.slider");
+    manageTime(true, max_time + 
+        getRelativePosition(a_slider, simspace).x - a_slider.getBoundingClientRect().width / 2 + 5 * event_padding);
     updateEventTimes(true);
 }
 
 function checkAnswers(event) {
-    if(event.button <= 1 && test_state === 1) {
+    if(event.button <= 1 && test_state === 1 && !gen_tick) {
+        gen_tick = true;
+        window.requestAnimationFrame((tim) => {
+            checkLogic();
+            gen_tick = false;
+        });
         test_state = 2;
-        checkLogic();
     }
 }
 
@@ -1400,7 +1448,7 @@ window.addEventListener("load", windowChange);
 window.addEventListener("resize", windowChange);
 // Listening for changing window sizes and loads to update positions and widths of elements
 
-tellspace.addEventListener("scroll", manageTime);
+tellspace.addEventListener("scroll", (event) => {manageTime();});
 // Calling function for dynamically resizing element with maximum scrolls
 
 simspace.addEventListener("mousedown", createMessageVisual);
@@ -1420,7 +1468,15 @@ subMode.addEventListener("click", inputMode);
 modechange.addEventListener("click", useMode(wrappers));
 // Switching between test mode and simulate mode
 
-generatebutton.addEventListener("click", generator);
+generatebutton.addEventListener("click", (event) => {
+    if(event.button <=1 && !gen_tick) {
+        gen_tick = true;
+        window.requestAnimationFrame((tim) => {
+            generator(1);
+            gen_tick = false;
+        });
+    }
+});
 // Generates a new test on click
 
 check_answers.addEventListener("click", checkAnswers);

@@ -755,6 +755,6 @@ input[type=text].enquirer:focus {
     padding: min(1.5vh, 15px);
 }
 
-#tellspace:has(~ #antiwrapper) .event-tip {
+#tellspace:has(~ #wrapper2.hidden) .event-tip {
     bottom: 79px;
 }
