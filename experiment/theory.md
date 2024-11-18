@@ -1,5 +1,8 @@
 ### Introduction
 
+Ordering of events are a vital backbone in many systems. Transactions must be processed in the right order to have meaning - be it computational or financial.
+Logical clocks step in when synchronizing clocks in a system with different time source. Scalar logical clock provides a simple first step to solving this problem. However, it fails at enforcing causality of events. Vector logical clocks attempt to close this gap.
+
 #### Model of a Distributed System
 
 1. Process - It is a sequence of events. These events are defined based on application. The sequence has total ordering - event _a_ occurs before event _b_ if _a_ happens before _b_. Sending or receiving messages between processes are also event. 
@@ -52,9 +55,9 @@ $$vt_i [1\dots n]$$
     $$vt_i[i] \Leftarrow vt_i[i] + d$$
 
 For two vectors $V_a$ and $V_b$, we say $V_a > V_b$ when:
-$$\forall k \in [1\dots n] \; \exists i \in k \; | \; V_a[i] \geq V_b[i], \; V_a \neq V_b$$
+$$\forall i \in [1\dots n] \; V_a[i] \geq V_b[i], \; V_a \neq V_b$$
 
 The causal relationship betwwen events $a$ and $b$ can be determined by considering their vector timestamps.
 $$ V_a < V_b \Leftrightarrow a \rightarrow b $$
-$$ V_a \ngeq V_b \; \cap \; V_b \ngeq V_a \Leftrightarrow a \parallel b \text{ , a and b are concurrent}
+$$ V_a \ngeq V_b \; \cap \; V_b \ngeq V_a \Leftrightarrow a \parallel b \text{ , a and b are concurrent}$$
 

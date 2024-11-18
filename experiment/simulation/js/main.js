@@ -339,7 +339,10 @@ function updateEventTimes(testing = false) {
                     toadd4.appendChild(toadd12);
                 }
                 else {
-                    toadd4 = document.createTextNode('[' + event_time.get(events[i]).toString() + ']');
+                    const toadd10 = document.createTextNode(': [' + event_time.get(events[i]).toString() + ']');
+                    toadd4 = document.createElement("span");
+                    toadd4.appendChild(toadd10);
+                    toadd4.appendChild(toadd5);
                 }
                 
 
@@ -348,9 +351,6 @@ function updateEventTimes(testing = false) {
                 toadd8.appendChild(toadd2);
                 eventtip.appendChild(toadd8);
                 eventtip.appendChild(toadd4);
-                if(!testing) {
-                    eventtip.appendChild(toadd5);
-                }
                 eventtip.parentNode.style.zIndex = String(4 + events.length - i);
                 eventtip.addEventListener("click", (event) => {
                     event.stopPropagation();

@@ -739,6 +739,10 @@ input[type=text].enquirer:focus {
         inset 0 0 60px darkorange;
 }
 
+.event-tip>span{
+    white-space: nowrap;
+}
+
 .event-tip :is(label.lbu, label.rbu) {
     white-space: nowrap;
     font-size: 1.6em;
