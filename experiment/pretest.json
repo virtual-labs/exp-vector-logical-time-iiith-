@@ -4,9 +4,9 @@
     {
       "question": "What is the size of the timestamps in case of vector logical clocks?",
       "answers": {
-        "a": "e<sup>2&sdot;ln(n)<sup>",
-        "b": "e<sup>n&sdot;ln(2)<sup>",
-        "c": "e<sup>2&sdot;ln(n)<sup>",
+        "a": "e<sup>2&sdot;ln(n)</sup>",
+        "b": "e<sup>n&sdot;ln(2)</sup>",
+        "c": "e<sup>1&sdot;ln(n)</sup>",
         "d": "ln(n)"
       },
       "explanations": {

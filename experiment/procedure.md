@@ -18,7 +18,7 @@
     - Delete button allows you to delete events and messages
 
 5. Add events
-    - Each process is represented by the a straight line representing its timeline.
+    - Each process is represented by a straight line representing its timeline.
     - New events can be added by moving the mouse over the line until it is highlighted and clicking once.
 
 6. Move the scrollbar to the left and right
@@ -36,30 +36,34 @@
     - This shows a popup, displaying event ID and time.
     - The causal relations leading up to that event are displayed below in the green box. Scroll if needed to look at all the events in a causal chain.
 
-9. Test your understanding
-    - Click on test to challenge youself with generated timelines!
+9. Looking at event pop-ups clearly
+    - If two or more event pop-ups overlap, you may not be able to see the details of that event.
+    - In this case, you may bring the pop-up you desire to read to the front by simply clicking on any part of its visible body.
 
-10. Generation Parameters
+10. Test your understanding
+    - Click on test to challenge yourself with generated timelines!
+
+11. Generation Parameters
     - The green box is replaced by a box with parameters you can adjust - which allows you to control some parts of the timeline generation
     - Number of processes, events and messages can all be controlled.
     - Click generate to get your challenge timeline!
 
-11. Filling up the test
+12. Filling up the test
     - There are pop-ups placed next to each event - fill them up.
     - In case you are unable to see where a message clearly ends, you can make timelines fainter by touching/hovering over them.
     - The number beside each timeline shows the ticking step of each process.
 
-12. Checking your answers
+13. Checking your answers
     - Click on check your answers once you are done filling up the test.
     - The test shows what you got right and the mistakes made.
 
-13. Challenging yourself
+14. Challenging yourself
     - There are two ways to challenge yourself - you may either generate new parameters and try again.
-    - Howeer, if you get a timeline entirely right, you have the option to take on the next difficulty level.
+    - However, if you get a timeline entirely right, you have the option to take on the next difficulty level.
     - The gauge lights up when this is possible. Simply tap or click on it to increase the difficulty level
     - There are 3 difficulty levels - easy, medium and hard.
 
-14. Once you have tested yourself, you may return to simulate.
+15. Once you have tested yourself, you may return to simulate.
 
 ### Observations
 

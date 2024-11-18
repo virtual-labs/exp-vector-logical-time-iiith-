@@ -57,8 +57,8 @@
       },
       "explanations": {
         "a": "Correct. A &nlt; B, A &ngt; B and A &ne; B",
-        "b": "Incorrect. A[4] lt; B[4]",
-        "c": "Incorrect. A[0] gt; B[0]"
+        "b": "Incorrect. A[4] &lt; B[4]",
+        "c": "Incorrect. A[0] &gt; B[0]"
       },
       "correctAnswer": "a",
       "difficulty": "beginner"
