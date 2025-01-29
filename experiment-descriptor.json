@@ -34,7 +34,7 @@
     {
       "target": "simulation.html",
       "source": "simulation/index.html",
-      "label": "Simulation of vector logical clock",
+      "label": "Simulation",
       "unit-type": "task",
       "content-type": "simulation"
     },

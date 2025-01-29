@@ -1,24 +1,25 @@
-## Introduction
-
 <div align="center">
 <img src="experiment/images/iiith-logo.png" width="25%">
 </div>
 
-<b>Discipline | <b>Fill your discipline name here
+
+### About the Experiment
+
+<b>Discipline | <b> Computer Science and Engineering
 :--|:--|
 <b> Lab | <b> Distributed Systems Virtual Lab
-<b> Experiment|     <b> Vector Logical Time (03)
+<b> Experiment | <b> Vector Logical time (03)
 
-### About the Experiment 
 
-Fill a brief description of this experiment here
+### Subject matter expert
 
-<b>Name of Developer | <b> Fill the name of experiment owner here 
+<b>Name of Developer | <b> Fill the name of experiment owner here
 :--|:--|
 <b> Institute | <b> IIIT Hyderabad
-<b> Email id|     <b> kkishore@iiit.ac.in
-<b> Department |  Computer Science and Engineering (Professor)
+<b> Email id | <b> kkishore@iiit.ac.in
+<b> Department | Computer Science and Engineering (Professor)
 <b> Website | [Faculty Page](https://faculty.iiit.ac.in/~kkishore/)
+
 
 ### Contributors List
 
